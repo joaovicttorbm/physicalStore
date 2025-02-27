@@ -4,10 +4,10 @@ import axios from "axios";
 class StoreMiddleware {
   async validateAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { cep, name, city, neighborhood, street, number, type } = req.body;
+      const { postalCode, name, city, neighborhood, street, number, type } = req.body;
 
 
-      const requiredFields = ["cep", "name", "city", "neighborhood", "street", "number", "type"];
+      const requiredFields = ["postalCode", "name", "city", "neighborhood", "street", "number", "type"];
       for (const field of requiredFields) {
         if (!req.body[field]) {
            res.status(400).json({ error: `The field '${field}' is required!` });
@@ -19,7 +19,7 @@ class StoreMiddleware {
       }
 
 
-      const viaCepResponse = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      const viaCepResponse = await axios.get(`https://viacep.com.br/ws/${postalCode}/json/`);
       const cityFromViaCep = viaCepResponse.data.localidade;
       const neighborhoodFromViaCep = viaCepResponse.data.bairro;
 
@@ -42,13 +42,13 @@ class StoreMiddleware {
       
       req.body.validatedAddress = {
         name: name.toUpperCase(),
-        cep,
+        postalCode,
         city: cityFromViaCep,
         neighborhood: neighborhoodFromViaCep,
         street,
         number,
-        latitude: location.lat,
-        longitude: location.lon,
+        latitude: parseFloat(location.lat),
+        longitude: parseFloat(location.lon),
         type,
       };
 
