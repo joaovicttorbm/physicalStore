@@ -1,28 +1,35 @@
 import { Request, Response } from "express";
 import { StoreService } from "../services/StoreService.js";
-import logger from "../utils/logger.js";
-
-const storeService = new StoreService();
 
 export class StoreController {
-  async createStore(req: Request, res: Response) {
+  constructor(private readonly storeService: StoreService = new StoreService()) {}
+
+  async createStore(req: Request, res: Response): Promise<void> {
     try {
-      const store = await storeService.addStore(req.body.validatedAddress);
+      const store = await this.storeService.addStore(req.body.validatedAddress);
       res.status(201).json(store);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
+    } catch (error) {
+      this.handleError(res, error);
     }
   }
 
-  async findStores(req: Request, res: Response) {
+  async findStores(req: Request, res: Response): Promise<void> {
     try {
       const { cep } = req.params;
-      console.log(cep)
-      const radius = parseFloat(req.query.radius as string) || 100;
-      const stores = await storeService.getStoresNearby(cep, radius);
+      const radius = this.parseRadius(req.query.radius);
+      const stores = await this.storeService.getStoresNearby(cep, radius);
       res.json(stores);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
+    } catch (error) {
+      this.handleError(res, error);
     }
+  }
+
+  private parseRadius(radius: any): number {
+    return isNaN(radius) ? 100 : parseFloat(radius);
+  }
+
+  private handleError(res: Response, error: any): void {
+    console.error(error);
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 }
