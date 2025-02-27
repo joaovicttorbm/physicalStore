@@ -3,8 +3,6 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/database/database.js";
 import storeRoutes from "./routes/StoreRoutes.js";
 import logger from "./utils/logger.js";
-import axios from "axios";
-
 
 dotenv.config();
 connectDB();
