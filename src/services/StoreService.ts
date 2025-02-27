@@ -1,6 +1,7 @@
 import axios from "axios";
 import { StoreRepository } from "../repositories/StoreRepository.js";
 import logger from "../utils/logger.js";
+import { IStore } from "../models/Store.js";
 
 export class StoreService {
   private storeRepository: StoreRepository;
@@ -9,71 +10,66 @@ export class StoreService {
     this.storeRepository = new StoreRepository();
   }
 
-  async addStore(storeData: any) {
-
-    return await this.storeRepository.create(storeData);
+  async addStore(storeData: IStore) {
+    try {
+      return await this.storeRepository.create(storeData);
+    } catch (error) {
+      logger.error("Error adding store:", error);
+      throw new Error("Unable to add store");
+    }
   }
 
-//   fórmula de Haversine para calcular a distância entre as coordenadas geográficas.
   private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const toRad = (value: number) => (value * Math.PI) / 180;
-    const RaioTerra = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
+    const EARTH_RADIUS = 6371; // Radius in kilometers
+    const deltaLat = toRad(lat2 - lat1);
+    const deltaLon = toRad(lon2 - lon1);
     const a =
-    // Calcula o quadrado do seno da metade da diferença de latitude.
-    // Isso ajuda a medir a variação da latitude entre os dois pontos.
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    // Converte as latitudes para radianos e aplica o cosseno.
-    // Isso leva em consideração a curvatura da Terra, garantindo mais precisão.
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-    // Calcula o quadrado do seno da metade da diferença de longitude.
-    // Mede a variação da longitude entre os dois pontos.
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    // atan2 calcular o ângulo central entre os pontos.
-    // sqt return tangent
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    console.log("haversineDistance: ",RaioTerra * c)
-    return RaioTerra * c;
+    return EARTH_RADIUS * c;
   }
 
-  async getStoresNearby(cep: string, radius: number = 100) {
+  private async fetchLocationByCep(cep: string) {
     const response = await axios.get(`https://nominatim.openstreetmap.org/search.php?q=${cep}&format=json`);
-    if (response.data.erro) throw new Error("CEP inválido!");
-  
+    if (response.data.error) {
+      throw new Error("Invalid CEP");
+    }
     if (response.data && response.data.length > 0) {
-      const location = response.data[0];
-      const latitude = parseFloat(location.lat);
-      const longitude = parseFloat(location.lon);
+      const { lat, lon } = response.data[0];
+      return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+    }
+    throw new Error("Coordinates not found.");
+  }
 
-      console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-
-      const stores = await this.storeRepository.findAll();
-      console.log(stores);
-    const nearbyStores = stores
-      // .map(store => ({
-      //   ...store,
-      //   distance: this.haversineDistance(latitude, longitude, store.latitude, store.longitude),
-      // }))
+  private filterNearbyStores(stores: IStore[], originLat: number, originLon: number, radius: number): any[] {
+    return stores
       .map(store => {
-        
-        const distance = this.haversineDistance(latitude, longitude, store.latitude, store.longitude);
-        console.log(`Origem: (${latitude}, ${longitude})`);
-        console.log(`Destino: (${ store.latitude}, ${store.longitude})`);
-        
+        const distance = this.haversineDistance(originLat, originLon, store.latitude, store.longitude);
         return { ...store, distance };
       })
       .filter(store => store.distance <= radius)
       .sort((a, b) => a.distance - b.distance);
-      console.log(nearbyStores)
+  }
 
-    if (nearbyStores.length === 0) return({});
+  async getStoresNearby(cep: string, radius: number = 100) {
+    try {
+      const { latitude, longitude } = await this.fetchLocationByCep(cep);
+      logger.info(`Coordinates for CEP ${cep}: Latitude ${latitude}, Longitude ${longitude}`);
 
-    return nearbyStores;
-    } else {
-      throw new Error('Coordenadas não encontradas.');
-    }    
+      const stores = await this.storeRepository.findAll();
+      const nearbyStores = this.filterNearbyStores(stores, latitude, longitude, radius);
+
+      if (nearbyStores.length === 0) {
+        return {};
+      }
+
+      return nearbyStores;
+    } catch (error) {
+      logger.error("Error fetching stores nearby:", error);
+      throw new Error("Unable to fetch nearby stores.");
+    }
   }
 }
