@@ -4,7 +4,7 @@ import { StoreService } from "../services/StoreService.js";
 export class StoreController {
   constructor(private readonly storeService: StoreService = new StoreService()) {}
 
-  async createStore(req: Request, res: Response): Promise<void> {
+  createStore = async (req: Request, res: Response): Promise<void> =>{
     try {
       const store = await this.storeService.addStore(req.body.validatedAddress);
       res.status(201).json(store);
@@ -13,7 +13,7 @@ export class StoreController {
     }
   }
 
-  async findStores(req: Request, res: Response): Promise<void> {
+  findStores =  async (req: Request, res: Response): Promise<void> =>{
     try {
       const { cep } = req.params;
       const radius = this.parseRadius(req.query.radius);
