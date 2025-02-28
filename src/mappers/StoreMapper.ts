@@ -3,7 +3,6 @@ import { StoreDTO } from "../dtos/StoreDTO.js";
 
 export class StoreMapper {
   static toDTO(store: IStore): StoreDTO {
-    console.log(store);
     return {
       id: store._id.toString(),
       name: store.name,
