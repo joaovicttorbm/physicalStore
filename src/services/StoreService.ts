@@ -2,6 +2,7 @@ import axios from "axios";
 import { StoreRepository } from "../repositories/StoreRepository.js";
 import logger from "../utils/logger.js";
 import { IStore } from "../models/Store.js";
+import { StoreExistsError } from "../errors/StoreExistsError.js";
 
 export class StoreService {
   private storeRepository: StoreRepository;
@@ -12,8 +13,15 @@ export class StoreService {
 
   async addStore(storeData: IStore) {
     try {
+      const existingStore = await this.storeRepository.findByNameAndPostalCode(storeData.name, storeData.postalCode);
+      if (existingStore) {
+        throw new StoreExistsError("A store with the same name and postal code already exists.");
+      }
       return await this.storeRepository.create(storeData);
     } catch (error) {
+      if (error instanceof StoreExistsError) {
+        throw error;
+      }
       logger.error("Error adding store:", error);
       throw new Error("Unable to add store");
     }
@@ -48,10 +56,10 @@ export class StoreService {
     return stores
       .map(store => {
         const distance = this.haversineDistance(originLat, originLon, store.latitude, store.longitude);
-        return { ...store, distance };
+        return { ...store, distance_km: distance.toFixed(2) }; 
       })
-      .filter(store => store.distance <= radius)
-      .sort((a, b) => a.distance - b.distance);
+      .filter(store => parseFloat(store.distance_km) <= radius)
+      .sort((a, b) => parseFloat(a.distance_km) - parseFloat(b.distance_km));
   }
 
   async getStoresNearby(cep: string, radius: number = 100) {
