@@ -16,4 +16,10 @@ export class StoreRepository {
   async findByNameAndPostalCode(name: string, postalCode: string): Promise<IStore | null> {
     return await StoreModel.findOne({ name, postalCode }).lean();
   }
+
+  async findByType(type: string): Promise<IStore[]> {
+    const stores = await StoreModel.find({ type }).lean();
+    return StoreMapper.toDTOs(stores);
+}
+
 }

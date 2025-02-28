@@ -23,7 +23,12 @@ constructor(  private readonly storeService: StoreService = new StoreService()) 
     try {
       const { cep } = req.params;
       const radius = this.parseRadius(req.query.radius);
-      const stores = await this.storeService.getStoresNearby(cep, radius);
+      const type = req.query.type as string;
+      const validTypes = ["hotel", "market", "restaurant"];
+        if (type && !validTypes.includes(type)) {
+            throw new Error(`Invalid type. Allowed values: ${validTypes.join(", ")}`);
+        }
+      const stores = await this.storeService.getStoresNearby(cep, radius, type);
       res.json(stores);
     } catch (error) {
       this.handleError(res, error);

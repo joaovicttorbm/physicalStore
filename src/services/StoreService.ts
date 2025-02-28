@@ -62,12 +62,19 @@ export class StoreService {
       .sort((a, b) => parseFloat(a.distance_km) - parseFloat(b.distance_km));
   }
 
-  async getStoresNearby(cep: string, radius: number = 100) {
+  async getStoresNearby(cep: string, radius: number = 100 , type: string): Promise<any> {
     try {
       const { latitude, longitude } = await this.fetchLocationByCep(cep);
-      logger.info(`Coordinates for CEP ${cep}: Latitude ${latitude}, Longitude ${longitude}`);
 
-      const stores = await this.storeRepository.findAll();
+      const stores = type 
+      ? await this.storeRepository.findByType(type) 
+      : await this.storeRepository.findAll();
+
+      if (stores.length === 0 ) {
+        console.log("No stores found");
+        return {};
+      }
+
       const nearbyStores = this.filterNearbyStores(stores, latitude, longitude, radius);
 
       if (nearbyStores.length === 0) {
