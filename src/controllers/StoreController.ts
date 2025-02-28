@@ -1,15 +1,20 @@
 import { Request, Response } from "express";
 import { StoreService } from "../services/StoreService.js";
+import { StoreExistsError } from "../errors/StoreExistsError.js";
 
 export class StoreController {
-  constructor(private readonly storeService: StoreService = new StoreService()) {}
+constructor(  private readonly storeService: StoreService = new StoreService()) {  }
 
   createStore = async (req: Request, res: Response): Promise<void> =>{
     try {
       const store = await this.storeService.addStore(req.body.validatedAddress);
       res.status(201).json(store);
     } catch (error) {
-      this.handleError(res, error);
+      if (error instanceof StoreExistsError) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Unable to add store" });
+      }
     }
   }
 

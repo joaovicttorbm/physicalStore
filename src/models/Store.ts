@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IStore {
+  [x: string]: any;
   name: string;
   postalCode: string;
   city: string;
