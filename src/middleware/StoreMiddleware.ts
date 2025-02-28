@@ -11,11 +11,13 @@ class StoreMiddleware {
       for (const field of requiredFields) {
         if (!req.body[field]) {
            res.status(400).json({ error: `The field '${field}' is required!` });
+           return
         }
       }
 
       if (!["hotel", "market", "restaurant"].includes(type)) {
          res.status(400).json({ error: "Invalid type! Use: hotel, market or restaurant." });
+         return
       }
 
 
@@ -26,10 +28,12 @@ class StoreMiddleware {
       
       if (city.toUpperCase() !== cityFromViaCep.toUpperCase()) {
          res.status(400).json({ error: `City does not match the provided ZIP code! Expected: ${cityFromViaCep}` });
+         return
       }
 
       if (neighborhood.toUpperCase() !== neighborhoodFromViaCep.toUpperCase()) {
          res.status(400).json({ error: `Neighborhood does not match the provided ZIP code! Expected: ${neighborhoodFromViaCep}` });
+         return
       }
 
       const nominatimResponse = await axios.get(`https://nominatim.openstreetmap.org/search.php?q=${cityFromViaCep}+${neighborhoodFromViaCep}&format=json`);
@@ -55,6 +59,7 @@ class StoreMiddleware {
       next();
     } catch (error) {
       next(error);
+      return
     }
   }
 }
