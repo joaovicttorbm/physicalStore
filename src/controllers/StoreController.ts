@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { StoreService } from "../services/StoreService.js";
 import { StoreExistsError } from "../errors/StoreExistsError.js";
+import logger from "../utils/logger.js";
 
 export class StoreController {
 constructor(  private readonly storeService: StoreService = new StoreService()) {  }
@@ -34,7 +35,7 @@ constructor(  private readonly storeService: StoreService = new StoreService()) 
   }
 
   private handleError(res: Response, error: any): void {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({ message: error.message || "Internal server error" });
   }
 }

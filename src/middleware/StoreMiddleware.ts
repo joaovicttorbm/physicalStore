@@ -41,8 +41,6 @@ class StoreMiddleware {
         throw new Error("Invalid ZIP code!");
       }
       const location = nominatimResponse.data[0];
-      console.log("Latitude:", location.lat, "Longitude:", location.lon);
-
       
       req.body.validatedAddress = {
         name: name.toUpperCase(),
