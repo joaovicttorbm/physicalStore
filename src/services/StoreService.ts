@@ -76,10 +76,6 @@ export class StoreService {
 
       const nearbyStores = this.filterNearbyStores(stores, latitude, longitude, radius);
 
-      if (nearbyStores.length === 0) {
-        return {};
-      }
-
       return nearbyStores;
     } catch (error) {
       logger.error("Error fetching stores nearby:", error);

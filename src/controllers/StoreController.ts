@@ -21,7 +21,12 @@ export class StoreController {
       const radius = this.parseRadius(req.query.radius);
       const type = req.query.type ? this.validateStoreType(req.query.type as string) : undefined;
       const stores = await this.storeService.getStoresNearby(cep, radius, type );
+      if (stores.length === 0) {
+        res.status(404).json({ message: "No stores found nearby." });
+      }  
+      
       res.json(stores);
+      
     } catch (error) {
       this.handleError(res, error);
     }
