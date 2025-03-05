@@ -62,7 +62,7 @@ export class StoreService {
       .sort((a, b) => parseFloat(a.distance_km) - parseFloat(b.distance_km));
   }
 
-  async getStoresNearby(cep: string, radius: number = 100 , type: string): Promise<any> {
+  async getStoresNearby(cep: string, radius: number = 100 , type: string = ''): Promise<any> {
     try {
       const { latitude, longitude } = await this.fetchLocationByCep(cep);
 
@@ -71,7 +71,6 @@ export class StoreService {
       : await this.storeRepository.findAll();
 
       if (stores.length === 0 ) {
-        console.log("No stores found");
         return {};
       }
 

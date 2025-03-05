@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import axios from "axios";
+import logger from "../utils/logger.js";
 
 class StoreMiddleware {
   async validateAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { postalCode, name, city, neighborhood, street, number, type } = req.body;
-
 
       const requiredFields = ["postalCode", "name", "city", "neighborhood", "street", "number", "type"];
       for (const field of requiredFields) {
@@ -20,11 +20,9 @@ class StoreMiddleware {
          return
       }
 
-
       const viaCepResponse = await axios.get(`https://viacep.com.br/ws/${postalCode}/json/`);
       const cityFromViaCep = viaCepResponse.data.localidade;
       const neighborhoodFromViaCep = viaCepResponse.data.bairro;
-
       
       if (city.toUpperCase() !== cityFromViaCep.toUpperCase()) {
          res.status(400).json({ error: `City does not match the provided ZIP code! Expected: ${cityFromViaCep}` });
@@ -56,8 +54,8 @@ class StoreMiddleware {
 
       next();
     } catch (error) {
+      logger.error(error)
       next(error);
-      return
     }
   }
 }

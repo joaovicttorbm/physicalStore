@@ -9,6 +9,17 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    logger.info(`
+      Method: ${req.method} 
+      Url: ${req.originalUrl} 
+      StatusCode: ${res.statusCode}`);
+  });
+  next();
+});
+
 app.use(storeRoutes);
 
 app.get('/', (req, res) => {
