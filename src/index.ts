@@ -25,6 +25,10 @@ app.use(storeRoutes);
 app.get('/', (req, res) => {
     res.send('Hello World');
   });
+
+app.use((req, res, next) => {
+    res.status(404).json({ message: "Route not found" });
+  });
 app.listen(3000, () =>  logger.info("Servidor rodando na porta 3000"));
 
 
