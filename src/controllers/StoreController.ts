@@ -23,9 +23,9 @@ export class StoreController {
       const stores = await this.storeService.getStoresNearby(cep, radius, type );
       if (stores.length === 0) {
         res.status(404).json({ message: "No stores found nearby." });
-      }  
-      
+      }  else {
       res.json(stores);
+      }
       
     } catch (error) {
       this.handleError(res, error);

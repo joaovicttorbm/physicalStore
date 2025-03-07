@@ -70,10 +70,6 @@ export class StoreService {
       ? await this.storeRepository.findByType(type) 
       : await this.storeRepository.findAll();
 
-      if (stores.length === 0 ) {
-        return {};
-      }
-
       const nearbyStores = this.filterNearbyStores(stores, latitude, longitude, radius);
 
       return nearbyStores;
