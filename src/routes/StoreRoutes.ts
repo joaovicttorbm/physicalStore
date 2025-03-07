@@ -7,6 +7,6 @@ const router = Router();
 const storeController = new StoreController();
 
 router.post("/stores", StoreMiddleware.validateAddress , storeController.createStore);
-router.get("/stores/:cep", storeController.findStores);
+router.get("/stores/:cep", StoreMiddleware.validateFindStore , storeController.findStores);
 
 export default router;

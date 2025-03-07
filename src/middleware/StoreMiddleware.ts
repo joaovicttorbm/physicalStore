@@ -58,6 +58,30 @@ class StoreMiddleware {
       next(error);
     }
   }
+  validateFindStore = (req: Request, res: Response, next: NextFunction): void => {
+    if (!this.validateCep(req.params.cep, res)) return;
+    if (req.query.type && !this.validateStoreType(req.query.type as string, res)) return;
+    next();
+  };
+  private validateStoreType(type: string, res: Response): boolean | undefined {
+    const validTypes = ["hotel", "market", "restaurant"];
+    if (type && !validTypes.includes(type)) {
+      res.status(400).json({ message: `Invalid type. Allowed values: ${validTypes.join(", ")}` });
+      return false;
+    }
+    return true;
+
+  }
+  private validateCep(cep: string, res: Response): boolean | undefined {
+    const cepRegex = /^[0-9]{5}-?[0-9]{3}$/;
+  
+    if (!cepRegex.test(cep)) {  
+       res.status(400).json({ message:"Invalid CEP format. Expected format: 12345-678 or 12345678."} );
+      return false;
+    }
+      
+    return true;
+  }
 }
 
 export default new StoreMiddleware();
