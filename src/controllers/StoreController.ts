@@ -42,8 +42,10 @@ export class StoreController {
   private handleCreateStoreError(res: Response, error: any): void {
     if (error instanceof StoreExistsError) {
       res.status(400).json({ message: error.message });
+      return;
     } else {
       res.status(500).json({ message: "Unable to add store" });
+      return;
     }
   }
 
