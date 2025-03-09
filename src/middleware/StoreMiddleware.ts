@@ -19,8 +19,8 @@ class StoreMiddleware {
          res.status(400).json({ error: "Invalid type! Use: hotel, market or restaurant." });
          return
       }
-
-      const viaCepResponse = await axios.get(`https://viacep.com.br/ws/${postalCode}/json/`);
+      const viaCep = process.env.VIACEP_URL;
+      const viaCepResponse = await axios.get(`${viaCep}${postalCode}/json/`);
       const cityFromViaCep = viaCepResponse.data.localidade;
       const neighborhoodFromViaCep = viaCepResponse.data.bairro;
       
@@ -33,8 +33,9 @@ class StoreMiddleware {
          res.status(400).json({ error: `Neighborhood does not match the provided ZIP code! Expected: ${neighborhoodFromViaCep}` });
          return
       }
-
-      const nominatimResponse = await axios.get(`https://nominatim.openstreetmap.org/search.php?q=${cityFromViaCep}+${neighborhoodFromViaCep}&format=json`);
+      
+      const nominatim = process.env.NOMINATIM_URL;
+      const nominatimResponse = await axios.get(`${nominatim}${cityFromViaCep}+${neighborhoodFromViaCep}&format=json`);
       if (nominatimResponse.data.length === 0) {
         throw new Error("Invalid ZIP code!");
       }
