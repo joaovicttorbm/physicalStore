@@ -1,11 +1,6 @@
 import winston from 'winston';
 
-// Define os formatos de log
-const logFormat = winston.format.printf(({ level, message, timestamp }) => {
-  return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
-});
-
-// Configuração do logger
+// Configu do logger.{info, error}
 const logger = winston.createLogger({
   level: 'info', 
   format: winston.format.combine(
@@ -14,8 +9,8 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.Console(), 
-    // new winston.transports.File({ filename: 'logs/error.log', level: 'error' }), // Salva erros no arquivo
-    // new winston.transports.File({ filename: 'logs/info.log', level: 'info' }) // Salva logs de info
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }), 
+    new winston.transports.File({ filename: 'logs/info.log', level: 'info' }) 
   ],
 });
 
