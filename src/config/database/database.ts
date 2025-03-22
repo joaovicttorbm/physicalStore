@@ -5,7 +5,7 @@ import logger from "../../utils/logger.js";
 dotenv.config();
 
 export async function connectDB() {
-  const mongoURI = process.env.MONGO_URI
+  const mongoURI = process.env.MONGO_URI_DEV
   try {
     await mongoose.connect( mongoURI as any);
     logger.info("🟢 Conected  MongoDB");
